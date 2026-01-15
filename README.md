@@ -32,7 +32,9 @@ KGSS의 누적 데이터 셋(2003~2025)에 있는 변수들을 변수명, 설문
 
 - 한국종합사회조사(KGSS): https://kgss.skku.edu/
 
-- 김지범, 강정한, 김석호, 김창환, 박원호, 심재만, 이윤석, 최슬기. (2025). 한국종합사회조사 2003-2025. 서울: 성균관대학교 출판부.
+- 김지범, 강정한, 김석호, 김창환, 박원호, 심재만, 이윤석, 최슬기, 김솔이, 김월화. (2025). 한국종합사회조사 2003-2025. 서울: 성균관대학교 출판부. 
+- Jibum Kim, Jeong-han Kang, Seok-ho Kim, ChangHwan Kim, Wonho Park, Jae-Mahn Shim, Yun-Suk Lee, Seulki Choi, Sori Kim and Worlhwa Kim. (2025). Korean General Social Survey 2003-2025. Seoul, Korea: Sungkyunkwan University.
+
 
 ## 업데이트 내역
 
