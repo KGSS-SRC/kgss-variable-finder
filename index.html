@@ -37,6 +37,11 @@
         color: var(--fg);
         background: var(--bg);
       }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
       .container {
         max-width: 900px;
         margin: 0 auto;
@@ -118,6 +123,7 @@
       }
       .muted {
         color: var(--muted);
+        overflow-wrap: anywhere;
       }
 
       .results {
@@ -231,8 +237,16 @@
         font-size: 0.8rem;
         color: var(--accent);
         user-select: none;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: start;
         margin-top: 4px;
+        border: 0;
+        background: transparent;
+        padding: 0;
+        font: inherit;
+        line-height: 1.4;
       }
       .detailsRow {
         font-size: 0.85rem;
@@ -449,6 +463,107 @@
       .submoduleRow {
         padding-left: 16px;
       }
+
+      @media (max-width: 640px) {
+        .container {
+          padding: 12px;
+        }
+        h1 {
+          font-size: 1.45rem;
+          line-height: 1.2;
+        }
+        .card {
+          border-radius: 12px;
+          padding: 12px;
+        }
+        .controlsRow {
+          gap: 10px;
+        }
+        .controlBox,
+        .controlSmall {
+          flex: 1 1 100%;
+          min-width: 0;
+        }
+        .controlTiny {
+          flex: 1 1 calc(50% - 5px);
+          min-width: 0;
+        }
+        .headerLine {
+          display: block;
+          margin-top: 12px;
+          padding: 0 2px;
+        }
+        .headerLine .headerLabel {
+          display: none;
+        }
+        .count {
+          text-align: left;
+          font-weight: 600;
+        }
+        .resultBlock {
+          border-radius: 12px;
+          padding: 12px;
+          gap: 12px;
+        }
+        .summaryRow {
+          grid-template-columns: minmax(72px, 34%) minmax(0, 1fr);
+          column-gap: 10px;
+          row-gap: 12px;
+          align-items: start;
+        }
+        .varName,
+        .labelCell {
+          font-size: 0.86rem;
+          line-height: 1.35;
+          min-width: 0;
+        }
+        .timelineWrapper {
+          grid-column: 1 / -1;
+          align-items: stretch;
+          min-width: 0;
+          width: 100%;
+          margin-top: 2px;
+        }
+        .timelineYears {
+          display: grid;
+          grid-template-columns: repeat(17, minmax(0, 1fr));
+          gap: 2px;
+          width: 100%;
+        }
+        .timelineLabels {
+          display: grid;
+          grid-template-columns: repeat(17, minmax(0, 1fr));
+          gap: 2px;
+          width: 100%;
+          font-size: 0.58rem;
+          margin-top: 6px;
+        }
+        .timelineLabels div:first-child {
+          text-align: left;
+        }
+        .timelineLabels div:last-child {
+          text-align: right;
+        }
+        .yearBlock {
+          height: 20px;
+          border-radius: 5px;
+        }
+        .toggleMore {
+          width: 100%;
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          background: #fff;
+          padding: 11px 12px;
+          margin-top: 0;
+          font-size: 0.85rem;
+          justify-self: stretch;
+        }
+        .detailsRow {
+          border-radius: 10px;
+          padding: 12px;
+          font-size: 0.84rem;
+        }
+      }
     </style>
     <script
       src="https://unpkg.com/react@18/umd/react.development.js"
@@ -485,7 +600,7 @@
 
       /* ---------- Timeline ---------- */
       function Timeline({ years }) {
-        const setYears = new Set((years || []).map((y) => parseInt(y)));
+        const setYears = new Set((years || []).map((y) => parseInt(y, 10)));
         return (
           <div className="timelineWrapper">
             <div className="timelineYears">
@@ -589,9 +704,13 @@
               <div className="labelCell">{row.label || ""}</div>
               <Timeline years={row.years} />
             </div>
-            <div className="toggleMore" onClick={() => setOpen((o) => !o)}>
+            <button
+              type="button"
+              className="toggleMore"
+              onClick={() => setOpen((o) => !o)}
+            >
               {open ? "▼ 접기" : "> 자세히 보기"}
-            </div>
+            </button>
             {open && (
               <Details
                 question={row.question}
@@ -899,14 +1018,19 @@
 
         // filtering pipeline
         const filtered = React.useMemo(() => {
-          const qNorm = normalize(search);
+          const queryTerms = normalize(search).split(/\s+/).filter(Boolean);
 
           const result = data.filter((row) => {
             // text filter
             const hay = [row.variable, row.label, row.question, row.items]
               .map(normalize)
               .join(" ");
-            if (qNorm !== "" && !hay.includes(qNorm)) return false;
+            if (
+              queryTerms.length > 0 &&
+              !queryTerms.every((term) => hay.includes(term))
+            ) {
+              return false;
+            }
 
             // year AND filter
             if (yearFilter.length > 0) {
@@ -950,8 +1074,8 @@
         return (
           <div className="container">
             <h1>KGSS 변수 검색</h1>
-            <p className="muted">
-              변수명, 항목, 설문 문항, 사용 연도, 모듈(예: ISSP/EASS/ESS 등)을
+            <p className="muted introText">
+              변수명, 항목, 설문 문항, 사용 연도, 모듈(예: ISSP, EASS, ESS 등)을
               기준으로 검색할 수 있습니다.
             </p>
 
@@ -1071,6 +1195,20 @@
                     Park, Jae-Mahn Shim, Yun-Suk Lee, Seulki Choi, Sori Kim, and
                     Worlhwa Kim. (2025). Korean General Social Survey 2003-2025.
                     Seoul, Korea: Sungkyunkwan University.
+                  </p>
+                  <p>
+                    성균관대학교 서베이리서치센터{" "}
+                    <a
+                      href="https://kgss.skku.edu/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "var(--accent)",
+                        textDecoration: "none",
+                      }}
+                    >
+                      https://kgss.skku.edu/
+                    </a>
                   </p>
                 </div>
                 <div>
